@@ -25,3 +25,7 @@
 - [ ] "Ready for review" label attached to the PR and reviewers mentioned in a comment
 - [ ] Changes have been reviewed by at least one other engineer
 - [ ] Issue from task tracker has a link to this pull request 
+
+### Deployment
+
+- [ ] The environment (`heroku config`) has been updated with any new required `ENV` variables
