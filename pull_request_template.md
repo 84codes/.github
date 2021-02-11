@@ -21,8 +21,7 @@
 
 ### Code review 
 
-- [ ]  This pull request has a descriptive title and information useful to a reviewer. There may be a screenshot or screencast attached
-- [ ] "Ready for review" label attached to the PR and reviewers mentioned in a comment
+- [ ] This pull request has a descriptive title and information useful to a reviewer. There may be a screenshot or screencast attached
 - [ ] Changes have been reviewed by at least one other engineer
 - [ ] Issue from task tracker has a link to this pull request 
 
