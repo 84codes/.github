@@ -6,11 +6,11 @@ Please fill me in.
 
 Please fill me in.
 
+### HOW can this pull request be tested?
+
+Specs? Manual steps? Please fill me in.
+
 ### Changelog to support
-
-Please fill me in.
-
-### Reference to Trello card
 
 Please fill me in.
 
@@ -18,6 +18,6 @@ Please fill me in.
 
 Friendly reminders
 
+- Include reference to Trello (or possibly Slack)
 - Lint rules pass
-- The code changed/added as part of this pull request has been covered with tests
 - The environment (`heroku config`) has been updated if needed (new `ENV` variables)
