@@ -10,7 +10,7 @@ Please fill me in.
 
 Specs? Manual steps? Please fill me in.
 
----
+<!---
 
 Friendly reminders
 
@@ -18,3 +18,5 @@ Friendly reminders
 - Include changelog to support if applicable
 - Lint rules pass
 - The environment (`heroku config`) has been updated if needed (new `ENV` variables)
+
+-->
