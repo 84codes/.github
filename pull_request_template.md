@@ -6,7 +6,7 @@ Please fill me in.
 
 Please fill me in.
 
-### HOW can this pull request be tested?
+### HOW was this pull request tested?
 
 Specs? Manual steps? Please fill me in.
 
