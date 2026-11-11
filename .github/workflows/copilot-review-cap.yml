@@ -1,0 +1,64 @@
+name: Copilot review cap
+
+# Org ruleset reviews each PR once when it opens. This workflow requests a new Copilot review on
+# each push until the PR has MAX_REVIEWS Copilot reviews, then asks the author to work locally.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions: {}
+
+concurrency:
+  group: copilot-review-cap-${{ github.repository }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  copilot-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ACTION: ${{ github.event.action }}
+      DRAFT: ${{ github.event.pull_request.draft }}
+      REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+      AUTHOR: ${{ github.event.pull_request.user.login }}
+      MAX_REVIEWS: "3"
+      COPILOT: copilot-pull-request-reviewer[bot]
+      MARKER: "<!-- copilot-review-cap -->"
+    steps:
+      - name: Request a Copilot review or ask the author to work locally
+        run: |
+          set -euo pipefail
+          if [[ "$ACTION" != "synchronize" || "$DRAFT" == "true" ]]; then
+            echo "Nothing to do for action=$ACTION draft=$DRAFT"
+            exit 0
+          fi
+
+          reviews=$(gh api --paginate --slurp "repos/$REPO/pulls/$PR/reviews" |
+            jq --arg bot "$COPILOT" '[.[][] | select(.user.login == $bot)] | length')
+          echo "Copilot reviews on #$PR: $reviews of $MAX_REVIEWS"
+
+          if (( reviews < MAX_REVIEWS )); then
+            if out=$(gh api -X POST "repos/$REPO/pulls/$PR/copilot-code-review" 2>&1); then
+              echo "Requested Copilot review"
+            elif grep -q "HTTP 409" <<<"$out"; then
+              echo "A Copilot review is already pending"
+            else
+              echo "::error::Copilot review request failed for $REPO#$PR: $out"
+              exit 1
+            fi
+            exit 0
+          fi
+
+          posted=$(gh api --paginate --slurp "repos/$REPO/issues/$PR/comments" |
+            jq --arg m "$MARKER" '[.[][] | select(.body | contains($m))] | length')
+          if (( posted > 0 )); then
+            echo "Cap comment already posted"
+            exit 0
+          fi
+          body="$MARKER
+          @$AUTHOR Copilot has reviewed this PR $MAX_REVIEWS times, which is our limit per PR. More rounds rarely find new problems, and each one costs AI units. Take a step back: pull the branch, run it locally and go through the full diff with Claude Code or a teammate. You can still request a Copilot review by hand if you really need one."
+          gh api -X POST "repos/$REPO/issues/$PR/comments" -f body="$body"
