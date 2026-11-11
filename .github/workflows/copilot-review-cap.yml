@@ -10,7 +10,8 @@ permissions: {}
 
 concurrency:
   group: copilot-review-cap-${{ github.repository }}-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  # Never cancel: a cancelled run on a required workflow blocks the merge.
+  cancel-in-progress: false
 
 jobs:
   copilot-review:
@@ -22,6 +23,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       ACTION: ${{ github.event.action }}
       DRAFT: ${{ github.event.pull_request.draft }}
+      FORK: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
       REPO: ${{ github.repository }}
       PR: ${{ github.event.pull_request.number }}
       AUTHOR: ${{ github.event.pull_request.user.login }}
@@ -32,8 +34,9 @@ jobs:
       - name: Request a Copilot review or ask the author to work locally
         run: |
           set -euo pipefail
-          if [[ "$ACTION" != "synchronize" || "$DRAFT" == "true" ]]; then
-            echo "Nothing to do for action=$ACTION draft=$DRAFT"
+          # Fork PRs get a read-only token, so skip them instead of failing a required check.
+          if [[ "$ACTION" != "synchronize" || "$DRAFT" == "true" || "$FORK" == "true" ]]; then
+            echo "Nothing to do for action=$ACTION draft=$DRAFT fork=$FORK"
             exit 0
           fi
 
